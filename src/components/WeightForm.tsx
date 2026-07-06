@@ -50,6 +50,7 @@ export default function WeightForm({ onAdded }: WeightFormProps) {
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
+            max={new Date().toISOString().split("T")[0]}
             required
             className="mt-1.5 block w-full rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] px-3 py-2.5 text-sm transition-all focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
             style={{ color: "var(--foreground)" }}

@@ -30,6 +30,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Date is required" }, { status: 400 });
   }
 
+  if (new Date(date) > new Date()) {
+    return NextResponse.json({ error: "Date cannot be in the future" }, { status: 400 });
+  }
+
   const rows = await sql`
     INSERT INTO body_measurements (user_id, date, waist_cm, hip_cm, chest_cm, thigh_cm, arm_cm, notes)
     VALUES (${session.userId}, ${date}, ${waist_cm ?? null}, ${hip_cm ?? null}, ${chest_cm ?? null}, ${thigh_cm ?? null}, ${arm_cm ?? null}, ${notes ?? ""})

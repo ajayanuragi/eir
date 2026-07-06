@@ -34,6 +34,13 @@ export async function POST(request: Request) {
     );
   }
 
+  if (new Date(body.date) > new Date()) {
+    return NextResponse.json(
+      { error: "Date cannot be in the future" },
+      { status: 400 },
+    );
+  }
+
   const rows = await sql`
     INSERT INTO weight_entries (user_id, date, weight_kg, notes)
     VALUES (${session.userId}, ${body.date}, ${parseFloat(body.weight_kg)}, ${body.notes || ""})
