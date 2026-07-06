@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Ruler, Scale, User, Settings, Target, Lock, RefreshCw } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -8,63 +8,67 @@ import HeightForm from "@/components/HeightForm";
 import MeasurementChart from "@/components/MeasurementChart";
 import MeasurementForm from "@/components/MeasurementForm";
 import MeasurementTable from "@/components/MeasurementTable";
+import { useMaybeUser } from "@/components/UserProvider";
+import { useFetch } from "@/lib/use-fetch";
+
+interface Entry {
+  id: string;
+  date: string;
+  weight_kg: number;
+}
+
+interface Measurement {
+  id: string;
+  date: string;
+  waist_cm: number | null;
+  hip_cm: number | null;
+  chest_cm: number | null;
+  thigh_cm: number | null;
+  arm_cm: number | null;
+  notes: string | null;
+}
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [username, setUsername] = useState("");
-  const [heightCm, setHeightCm] = useState<number | null>(null);
-  const [currentWeight, setCurrentWeight] = useState<number | null>(null);
-  const [goalWeight, setGoalWeightLocal] = useState<number | null>(null);
-  const [unitPref, setUnitPref] = useState("kg");
-  const [measurements, setMeasurements] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { user, loading: userLoading, refresh: refreshUser } = useMaybeUser();
 
-  // Goal weight form
+  const { data: entries } = useFetch<Entry[]>(
+    user ? "entries" : null,
+    async () => {
+      const res = await fetch("/api/weight");
+      if (!res.ok) { router.push("/login"); throw new Error("Unauthorized"); }
+      return res.json();
+    },
+  );
+
+  const { data: measurements, refetch: refetchMeasurements } = useFetch<Measurement[]>(
+    user ? "measurements" : null,
+    async () => {
+      const res = await fetch("/api/measurements");
+      return res.json();
+    },
+  );
+
+  const sorted = [...(entries ?? [])].sort(
+    (a: { date: string }, b: { date: string }) =>
+      new Date(b.date).getTime() - new Date(a.date).getTime(),
+  );
+  const currentWeight = sorted[0]?.weight_kg ?? null;
+
   const [goalInput, setGoalInput] = useState("");
   const [goalSaving, setGoalSaving] = useState(false);
   const [goalError, setGoalError] = useState("");
-
-  // Unit toggle
   const [unitSaving, setUnitSaving] = useState(false);
-
-  // Password change
   const [currentPw, setCurrentPw] = useState("");
   const [newPw, setNewPw] = useState("");
   const [pwSaving, setPwSaving] = useState(false);
   const [pwError, setPwError] = useState("");
   const [pwSuccess, setPwSuccess] = useState("");
 
-  function fetchData() {
-    Promise.all([
-      fetch("/api/me"),
-      fetch("/api/weight"),
-      fetch("/api/measurements"),
-    ]).then(async ([meRes, weightRes, measRes]) => {
-      if (!meRes.ok || !weightRes.ok) {
-        router.push("/login");
-        return;
-      }
-      const me = await meRes.json();
-      const entries = await weightRes.json();
-      const meas = await measRes.json();
-
-      setUsername(me.username);
-      setHeightCm(me.height_cm);
-      setGoalWeightLocal(me.goal_weight_kg);
-      setUnitPref(me.unit_preference);
-      setGoalInput(me.goal_weight_kg !== null ? String(me.goal_weight_kg) : "");
-      setMeasurements(meas);
-
-      const sorted = [...entries].sort(
-        (a: { date: string }, b: { date: string }) =>
-          new Date(b.date).getTime() - new Date(a.date).getTime(),
-      );
-      setCurrentWeight(sorted[0]?.weight_kg ?? null);
-      setLoading(false);
-    });
+  // Initialize goal input when user loads
+  if (user && goalInput === "" && user.goal_weight_kg !== null) {
+    setGoalInput(String(user.goal_weight_kg));
   }
-
-  useEffect(() => { fetchData() }, []);
 
   async function saveGoal(e: React.FormEvent) {
     e.preventDefault();
@@ -81,12 +85,9 @@ export default function ProfilePage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ goal_weight_kg: val }),
     });
-    if (!res.ok) {
-      setGoalError("Failed to save");
-    } else {
-      setGoalWeightLocal(val);
-    }
+    if (!res.ok) setGoalError("Failed to save");
     setGoalSaving(false);
+    refreshUser();
   }
 
   async function saveUnit(u: string) {
@@ -96,8 +97,8 @@ export default function ProfilePage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ unit_preference: u }),
     });
-    setUnitPref(u);
     setUnitSaving(false);
+    refreshUser();
   }
 
   async function changePassword(e: React.FormEvent) {
@@ -122,14 +123,14 @@ export default function ProfilePage() {
   }
 
   const displayWeight = (kg: number) =>
-    unitPref === "lbs" ? `${(kg * 2.20462).toFixed(1)} lbs` : `${kg} kg`;
+    user?.unit_preference === "lbs" ? `${(kg * 2.20462).toFixed(1)} lbs` : `${kg} kg`;
 
-  if (loading) {
+  if (userLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--background)]">
+      <div className="flex min-h-screen items-center justify-center" style={{ background: "var(--background)" }}>
         <div className="flex flex-col items-center gap-3">
           <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-orange-600 border-t-transparent" />
-          <p className="text-sm text-[var(--muted)]">Loading...</p>
+          <p className="text-sm text-(--muted)">Loading...</p>
         </div>
       </div>
     );
@@ -137,9 +138,9 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen" style={{ background: "var(--background)" }}>
-      <Navbar username={username} />
+      <Navbar username={user!.username} />
 
-      <main className="mx-auto max-w-2xl space-y-6 px-4 py-8 animate-slide-up">
+      <main className="mx-auto max-w-2xl space-y-6 px-4 py-8">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-slate-500 to-slate-700 text-white shadow-sm">
             <Settings size={20} />
@@ -150,20 +151,18 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* User card */}
         <div className="rounded-2xl border border-[var(--card-border)] p-6 shadow-sm" style={{ background: "var(--card)" }}>
           <div className="flex items-center gap-4">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 text-white shadow-sm">
               <User size={28} />
             </div>
             <div>
-              <p className="text-lg font-semibold" style={{ color: "var(--foreground)" }}>{username}</p>
+              <p className="text-lg font-semibold" style={{ color: "var(--foreground)" }}>{user!.username}</p>
               <p className="text-sm" style={{ color: "var(--muted)" }}>Member</p>
             </div>
           </div>
         </div>
 
-        {/* Stats row */}
         <div className="grid grid-cols-2 gap-4">
           <div className="rounded-2xl border border-[var(--card-border)] p-5 shadow-sm" style={{ background: "var(--card)" }}>
             <div className="flex items-center gap-3">
@@ -186,7 +185,7 @@ export default function ProfilePage() {
               <div>
                 <p className="text-xs font-medium" style={{ color: "var(--muted)" }}>Height</p>
                 <p className="text-xl font-bold" style={{ color: "var(--foreground)" }}>
-                  {heightCm !== null ? `${heightCm} cm` : "—"}
+                  {user!.height_cm !== null ? `${user!.height_cm} cm` : "—"}
                 </p>
               </div>
             </div>
@@ -194,7 +193,6 @@ export default function ProfilePage() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          {/* Goal weight */}
           <div className="rounded-2xl border border-[var(--card-border)] p-6 shadow-sm" style={{ background: "var(--card)" }}>
             <div className="flex items-center gap-2 mb-4">
               <Target size={16} className="text-orange-600" />
@@ -208,7 +206,7 @@ export default function ProfilePage() {
                 max="500"
                 value={goalInput}
                 onChange={(e) => setGoalInput(e.target.value)}
-                placeholder={unitPref === "lbs" ? "165" : "75"}
+                placeholder={user!.unit_preference === "lbs" ? "165" : "75"}
                 className="flex-1 rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] px-3 py-2 text-sm transition-all focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                 style={{ color: "var(--foreground)" }}
               />
@@ -221,14 +219,14 @@ export default function ProfilePage() {
               </button>
             </form>
             {goalError && <p className="mt-2 text-xs text-red-500">{goalError}</p>}
-            {goalWeight !== null && (
+            {user!.goal_weight_kg !== null && (
               <p className="mt-2 text-xs" style={{ color: "var(--muted)" }}>
-                Target: {displayWeight(goalWeight)}
+                Target: {displayWeight(user!.goal_weight_kg)}
                 {currentWeight !== null && (
                   <span>
-                    {" "}— {currentWeight <= goalWeight
-                      ? `${(goalWeight - currentWeight).toFixed(1)} kg to gain`
-                      : `${(currentWeight - goalWeight).toFixed(1)} kg to lose`
+                    {" "}— {currentWeight <= user!.goal_weight_kg
+                      ? `${(user!.goal_weight_kg - currentWeight).toFixed(1)} kg to gain`
+                      : `${(currentWeight - user!.goal_weight_kg).toFixed(1)} kg to lose`
                     }
                   </span>
                 )}
@@ -236,7 +234,6 @@ export default function ProfilePage() {
             )}
           </div>
 
-          {/* Unit preference */}
           <div className="rounded-2xl border border-[var(--card-border)] p-6 shadow-sm" style={{ background: "var(--card)" }}>
             <div className="flex items-center gap-2 mb-4">
               <RefreshCw size={16} className="text-orange-600" />
@@ -247,9 +244,9 @@ export default function ProfilePage() {
                 <button
                   key={u}
                   onClick={() => saveUnit(u)}
-                  disabled={unitSaving || unitPref === u}
+                  disabled={unitSaving || user!.unit_preference === u}
                   className={`flex-1 rounded-xl py-2.5 text-sm font-semibold transition-all ${
-                    unitPref === u
+                    user!.unit_preference === u
                       ? "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300"
                       : "border border-[var(--card-border)] text-[var(--muted)] hover:bg-[var(--muted-bg)]"
                   }`}
@@ -261,68 +258,65 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Height update */}
         <div className="rounded-2xl border border-[var(--card-border)] p-6 shadow-sm" style={{ background: "var(--card)" }}>
           <div className="flex items-center gap-2 mb-4">
             <Ruler size={16} className="text-orange-600" />
             <h3 className="text-base font-semibold" style={{ color: "var(--foreground)" }}>Update height</h3>
           </div>
-          <HeightForm heightCm={heightCm} onSaved={(cm) => setHeightCm(cm)} />
+          <HeightForm heightCm={user!.height_cm} onSaved={refreshUser} />
         </div>
 
-        {/* Change password */}
         <div className="rounded-2xl border border-[var(--card-border)] p-6 shadow-sm" style={{ background: "var(--card)" }}>
-            <div className="flex items-center gap-2 mb-4">
-              <Lock size={16} className="text-orange-600" />
-              <h3 className="text-base font-semibold" style={{ color: "var(--foreground)" }}>Change password</h3>
-            </div>
-            <form onSubmit={changePassword} className="space-y-3">
-              <input
-                type="password"
-                value={currentPw}
-                onChange={(e) => setCurrentPw(e.target.value)}
-                placeholder="Current password"
-                required
-                className="block w-full rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] px-3 py-2.5 text-sm transition-all focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
-                style={{ color: "var(--foreground)" }}
-              />
-              <input
-                type="password"
-                value={newPw}
-                onChange={(e) => setNewPw(e.target.value)}
-                placeholder="New password (6+ characters)"
-                required
-                minLength={6}
-                className="block w-full rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] px-3 py-2.5 text-sm transition-all focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
-                style={{ color: "var(--foreground)" }}
-              />
-              {pwError && <p className="text-xs text-red-500">{pwError}</p>}
-              {pwSuccess && <p className="text-xs text-emerald-600">{pwSuccess}</p>}
-              <button
-                type="submit"
-                disabled={pwSaving}
-                className="rounded-xl bg-gradient-to-r from-orange-600 to-orange-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:from-orange-500 hover:to-orange-400 disabled:opacity-50"
-              >
-                {pwSaving ? "Updating..." : "Update password"}
-              </button>
-            </form>
+          <div className="flex items-center gap-2 mb-4">
+            <Lock size={16} className="text-orange-600" />
+            <h3 className="text-base font-semibold" style={{ color: "var(--foreground)" }}>Change password</h3>
+          </div>
+          <form onSubmit={changePassword} className="space-y-3">
+            <input
+              type="password"
+              value={currentPw}
+              onChange={(e) => setCurrentPw(e.target.value)}
+              placeholder="Current password"
+              required
+              className="block w-full rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] px-3 py-2.5 text-sm transition-all focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+              style={{ color: "var(--foreground)" }}
+            />
+            <input
+              type="password"
+              value={newPw}
+              onChange={(e) => setNewPw(e.target.value)}
+              placeholder="New password (6+ characters)"
+              required
+              minLength={6}
+              className="block w-full rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] px-3 py-2.5 text-sm transition-all focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+              style={{ color: "var(--foreground)" }}
+            />
+            {pwError && <p className="text-xs text-red-500">{pwError}</p>}
+            {pwSuccess && <p className="text-xs text-emerald-600">{pwSuccess}</p>}
+            <button
+              type="submit"
+              disabled={pwSaving}
+              className="rounded-xl bg-gradient-to-r from-orange-600 to-orange-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:from-orange-500 hover:to-orange-400 disabled:opacity-50"
+            >
+              {pwSaving ? "Updating..." : "Update password"}
+            </button>
+          </form>
         </div>
 
-        {/* Body measurements */}
         <div className="space-y-4">
           <div className="rounded-2xl border border-[var(--card-border)] p-6 shadow-sm" style={{ background: "var(--card)" }}>
             <h3 className="text-base font-semibold mb-4" style={{ color: "var(--foreground)" }}>Add measurements</h3>
-            <MeasurementForm onAdded={fetchData} />
+            <MeasurementForm onAdded={() => refetchMeasurements()} />
           </div>
-          {measurements.length >= 3 && (
+          {(measurements ?? []).length >= 3 && (
             <div className="rounded-2xl border border-[var(--card-border)] p-6 shadow-sm" style={{ background: "var(--card)" }}>
               <h3 className="text-base font-semibold mb-4" style={{ color: "var(--foreground)" }}>Measurement trends</h3>
-              <MeasurementChart entries={measurements} />
+              <MeasurementChart entries={measurements ?? []} />
             </div>
           )}
           <div className="rounded-2xl border border-[var(--card-border)] p-6 shadow-sm" style={{ background: "var(--card)" }}>
             <h3 className="text-base font-semibold mb-4" style={{ color: "var(--foreground)" }}>Measurement history</h3>
-            <MeasurementTable entries={measurements} onDeleted={fetchData} />
+            <MeasurementTable entries={measurements ?? []} onDeleted={() => refetchMeasurements()} />
           </div>
         </div>
       </main>
