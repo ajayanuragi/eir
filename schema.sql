@@ -2,6 +2,7 @@ CREATE TABLE users (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   username TEXT UNIQUE NOT NULL,
   password_hash TEXT NOT NULL,
+  height_cm DECIMAL(5,1),
   created_at TIMESTAMPTZ DEFAULT now()
 );
 

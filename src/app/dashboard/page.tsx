@@ -7,6 +7,7 @@ import StatsCards from "@/components/StatsCards";
 import WeightChart from "@/components/WeightChart";
 import WeightForm from "@/components/WeightForm";
 import WeightTable from "@/components/WeightTable";
+import HeightForm from "@/components/HeightForm";
 
 interface Entry {
   id: string;
@@ -18,6 +19,7 @@ interface Entry {
 export default function DashboardPage() {
   const router = useRouter();
   const [username, setUsername] = useState<string | null>(null);
+  const [heightCm, setHeightCm] = useState<number | null>(null);
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,6 +42,7 @@ export default function DashboardPage() {
       }
       const data = await res.json();
       setUsername(data.username);
+      setHeightCm(data.height_cm);
       await fetchEntries();
       setLoading(false);
     }
@@ -65,7 +68,7 @@ export default function DashboardPage() {
           <p className="text-sm text-slate-500">Track your weight progress</p>
         </div>
 
-        <StatsCards entries={entries} />
+        <StatsCards entries={entries} heightCm={heightCm} />
 
         <div className="rounded-xl border border-slate-200 bg-white p-6">
           <h3 className="mb-4 text-lg font-semibold text-slate-900">Trend</h3>
@@ -73,12 +76,21 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-5">
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-4">
             <div className="rounded-xl border border-slate-200 bg-white p-6">
               <h3 className="mb-4 text-lg font-semibold text-slate-900">
                 Add entry
               </h3>
               <WeightForm onAdded={fetchEntries} />
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white p-6">
+              <h3 className="mb-4 text-lg font-semibold text-slate-900">
+                Your height
+              </h3>
+              <HeightForm
+                heightCm={heightCm}
+                onSaved={(cm) => setHeightCm(cm)}
+              />
             </div>
           </div>
 
