@@ -4,11 +4,17 @@ export default function Home() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-orange-50 px-4">
       <div className="w-full max-w-md text-center">
+        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-600 shadow-lg shadow-orange-200">
+          <span className="text-3xl font-bold text-white">e</span>
+        </div>
         <h1 className="text-4xl font-bold tracking-tight text-slate-900">
           eir
         </h1>
-        <p className="mt-3 text-lg text-slate-500">
-          Track your weight, visualize your progress, reach your goals.
+        <p className="mt-2 text-sm font-medium tracking-widest uppercase text-orange-600">
+          Weight tracker
+        </p>
+        <p className="mt-4 text-lg text-slate-500">
+          Track your weight, visualize your journey, find your balance.
         </p>
 
         <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:justify-center">

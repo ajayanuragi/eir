@@ -13,8 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "eir",
-  description: "Track your weight, visualize progress, reach your goals.",
+  title: "eir — weight tracker",
+  description: "Track your weight, visualize your journey, find your balance.",
+  icons: { icon: "/favicon.svg" },
 };
 
 export default function RootLayout({

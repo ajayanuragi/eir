@@ -72,7 +72,7 @@ export default function DashboardPage() {
 
         <div className="rounded-xl border border-slate-200 bg-white p-6">
           <h3 className="mb-4 text-lg font-semibold text-slate-900">Trend</h3>
-          <WeightChart entries={entries} />
+          <WeightChart entries={entries} heightCm={heightCm} />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-5">

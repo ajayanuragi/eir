@@ -37,10 +37,16 @@ export default function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-orange-50 px-4">
       <div className="w-full max-w-sm space-y-6 rounded-2xl bg-white p-8 shadow-xl">
         <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-orange-600 shadow-sm">
+            <span className="text-xl font-bold text-white">e</span>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
             eir
           </h1>
-          <p className="mt-1 text-sm text-slate-500">Create your account</p>
+          <p className="mt-0.5 text-xs font-medium tracking-widest uppercase text-orange-600">
+            Weight tracker
+          </p>
+          <p className="mt-3 text-sm text-slate-500">Create your account</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
