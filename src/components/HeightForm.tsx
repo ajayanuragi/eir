@@ -90,21 +90,22 @@ export default function HeightForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-2">
-      <label className="block text-xs font-medium text-slate-500">Height</label>
+    <form onSubmit={handleSubmit} className="space-y-2.5">
+      <label className="block text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Height</label>
 
       {unit === "ftin" ? (
         <div className="flex items-end gap-2">
-          <div className="flex rounded-lg border border-slate-300 overflow-hidden focus-within:ring-1 focus-within:ring-orange-500 focus-within:border-orange-500">
+          <div className="flex rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] overflow-hidden focus-within:ring-2 focus-within:ring-orange-500/20 focus-within:border-orange-400 transition-all">
             <input
               type="number"
               min="0"
               value={feet}
               onChange={(e) => setFeet(e.target.value)}
               placeholder="5"
-              className="w-16 px-3 py-2 text-sm text-center outline-none"
+              className="w-16 px-3 py-2.5 text-sm text-center bg-transparent outline-none"
+              style={{ color: "var(--foreground)" }}
             />
-            <span className="flex items-center px-1.5 text-sm text-slate-400 bg-slate-50 border-l border-slate-300">
+            <span className="flex items-center px-1.5 text-sm border-l border-[var(--input-border)]" style={{ color: "var(--muted)", background: "var(--muted-bg)" }}>
               ft
             </span>
             <input
@@ -114,16 +115,18 @@ export default function HeightForm({
               value={inches}
               onChange={(e) => setInches(e.target.value)}
               placeholder="6"
-              className="w-16 px-3 py-2 text-sm text-center outline-none border-l border-slate-300"
+              className="w-16 px-3 py-2.5 text-sm text-center bg-transparent outline-none border-l border-[var(--input-border)]"
+              style={{ color: "var(--foreground)" }}
             />
-            <span className="flex items-center px-1.5 text-sm text-slate-400 bg-slate-50 border-l border-slate-300">
+            <span className="flex items-center px-1.5 text-sm border-l border-[var(--input-border)]" style={{ color: "var(--muted)", background: "var(--muted-bg)" }}>
               in
             </span>
           </div>
           <select
             value={unit}
             onChange={(e) => switchUnit(e.target.value as Unit)}
-            className="rounded-lg border border-slate-300 px-2 py-2 text-sm text-slate-600 outline-none cursor-pointer"
+            className="rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] px-2.5 py-2.5 text-sm outline-none cursor-pointer transition-all focus:border-orange-400 focus:ring-2 focus:ring-orange-500/20"
+            style={{ color: "var(--muted)" }}
           >
             <option value="cm">cm</option>
             <option value="in">in</option>
@@ -132,7 +135,7 @@ export default function HeightForm({
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-1.5 rounded-lg bg-orange-600 px-3 py-2 text-sm font-medium text-white hover:bg-orange-500 disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-orange-600 to-orange-500 px-3.5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:from-orange-500 hover:to-orange-400 disabled:opacity-50"
           >
             <Ruler size={14} />
             {saving ? "..." : "Save"}
@@ -140,7 +143,7 @@ export default function HeightForm({
         </div>
       ) : (
         <div className="flex items-end gap-2">
-          <div className="flex-1 flex rounded-lg border border-slate-300 overflow-hidden focus-within:ring-1 focus-within:ring-orange-500 focus-within:border-orange-500">
+          <div className="flex-1 flex rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] overflow-hidden focus-within:ring-2 focus-within:ring-orange-500/20 focus-within:border-orange-400 transition-all">
             <input
               type="number"
               step="0.1"
@@ -148,12 +151,14 @@ export default function HeightForm({
               value={value}
               onChange={(e) => setValue(e.target.value)}
               placeholder={unit === "cm" ? "175" : "69"}
-              className="flex-1 px-3 py-2 text-sm outline-none"
+              className="flex-1 px-3 py-2.5 text-sm bg-transparent outline-none"
+              style={{ color: "var(--foreground)" }}
             />
             <select
               value={unit}
               onChange={(e) => switchUnit(e.target.value as Unit)}
-              className="bg-slate-50 px-2 text-sm text-slate-600 border-l border-slate-300 outline-none cursor-pointer"
+              className="px-2.5 text-sm border-l border-[var(--input-border)] outline-none cursor-pointer"
+              style={{ color: "var(--muted)", background: "var(--muted-bg)" }}
             >
               <option value="cm">cm</option>
               <option value="in">in</option>
@@ -163,7 +168,7 @@ export default function HeightForm({
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-1.5 rounded-lg bg-orange-600 px-3 py-2 text-sm font-medium text-white hover:bg-orange-500 disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-orange-600 to-orange-500 px-3.5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:from-orange-500 hover:to-orange-400 disabled:opacity-50"
           >
             <Ruler size={14} />
             {saving ? "..." : "Save"}

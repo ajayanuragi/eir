@@ -1,8 +1,31 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-border: #e2e8f0;
+  --nav-bg: rgba(255, 255, 255, 0.8);
+  --nav-border: rgba(226, 232, 240, 0.8);
+  --input-bg: #f8fafc;
+  --input-border: #e2e8f0;
+  --muted: #94a3b8;
+  --muted-bg: #f1f5f9;
+  --sidebar: #ffffff;
+}
+
+.dark {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --card: #1e293b;
+  --card-border: #334155;
+  --nav-bg: rgba(15, 23, 42, 0.85);
+  --nav-border: rgba(51, 65, 85, 0.8);
+  --input-bg: #1e293b;
+  --input-border: #334155;
+  --muted: #64748b;
+  --muted-bg: #1e293b;
+  --sidebar: #1e293b;
 }
 
 @theme inline {
@@ -12,8 +35,50 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+::selection {
+  background-color: #fed7aa;
+  color: #7c2d12;
+}
+
+.dark ::selection {
+  background-color: rgba(234, 88, 12, 0.4);
+  color: #ffedd5;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 20px rgba(234, 88, 12, 0.15); }
+  50% { box-shadow: 0 0 40px rgba(234, 88, 12, 0.3); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out;
 }
