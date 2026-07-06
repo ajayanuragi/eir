@@ -10,8 +10,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Username and password required" }, { status: 400 });
   }
 
-  const { rows } = await sql`SELECT id, username, password_hash FROM users WHERE username = ${username}`;
-  const user = rows[0];
+  const users = await sql`SELECT id, username, password_hash FROM users WHERE username = ${username}`;
+  const user = users[0] as { id: string; username: string; password_hash: string } | undefined;
 
   if (!user || !(await bcrypt.compare(password, user.password_hash))) {
     return NextResponse.json({ error: "Invalid username or password" }, { status: 401 });

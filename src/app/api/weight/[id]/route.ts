@@ -13,12 +13,12 @@ export async function DELETE(
 
   const { id } = await params;
 
-  const { rowCount } = await sql`
+  const result = await sql`
     DELETE FROM weight_entries
     WHERE id = ${id} AND user_id = ${session.userId}
   `;
 
-  if (rowCount === 0) {
+  if (result.length === 0) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

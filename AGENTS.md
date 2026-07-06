@@ -12,7 +12,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 | -------------- | -------------------------------------------------------------------- |
 | Runtime        | Bun 1.3+                                                             |
 | Framework      | Next.js 16 (App Router, `src/` dir)                                  |
-| DB             | PostgreSQL via `@vercel/postgres` (Vercel Postgres dashboard)        |
+| DB             | PostgreSQL via `@neondatabase/serverless` (Vercel Postgres)        |
 | Auth           | Custom JWT via `jose` + `bcryptjs`, stored in httpOnly cookie        |
 | Charts         | recharts                                                             |
 | Styling        | Tailwind CSS 4                                                       |
@@ -30,7 +30,7 @@ bun run dev        # http://localhost:3000
 
 ```
 SESSION_SECRET=generate_a_random_64_char_secret     # used by jose to sign JWTs
-POSTGRES_URL=your_postgres_connection_string         # set automatically by Vercel Postgres
+DATABASE_URL=your_postgres_connection_string         # set automatically by Vercel Postgres
 ```
 
 Generate the secret: `openssl rand -base64 48`
@@ -38,8 +38,8 @@ Generate the secret: `openssl rand -base64 48`
 ## Database setup
 
 1. **Production**: Vercel Postgres — provision from Vercel dashboard (Storage → Create → Postgres).  
-   The `POSTGRES_URL` is auto-injected in deployment.  
-   **Local dev**: Use Neon (free at neon.tech) or any PostgreSQL. Set `POSTGRES_URL` in `.env.local`.
+   The `DATABASE_URL` is auto-injected in deployment.  
+   **Local dev**: Use Neon (free at neon.tech) or any PostgreSQL. Set `DATABASE_URL` in `.env.local`.
 2. Run `schema.sql` against your database.
 
 ## Architecture
@@ -67,7 +67,7 @@ src/
 │   ├── WeightForm.tsx
 │   └── WeightTable.tsx
 ├── lib/
-│   ├── db.ts                 # @vercel/postgres sql helper
+│   ├── db.ts                 # @neondatabase/serverless sql helper
 │   └── session.ts            # JWT encrypt/decrypt, cookie helpers
 ├── proxy.ts                  # Auth guard (Next.js 16 proxy)
 └── ...
@@ -103,6 +103,6 @@ No test framework set up.
 1. Push to GitHub
 2. Import repo in Vercel
 3. In Vercel dashboard: Storage → Create Postgres database
-4. Vercel auto-injects `POSTGRES_URL`. Add `SESSION_SECRET` in Environment Variables.
+4. Vercel auto-injects `DATABASE_URL`. Add `SESSION_SECRET` in Environment Variables.
 5. Run `schema.sql` against the Vercel Postgres database (use Vercel CLI or any SQL client)
 6. Auto-deploys on push to main

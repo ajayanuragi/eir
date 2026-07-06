@@ -8,7 +8,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { rows } = await sql`
+  const rows = await sql`
     SELECT id, date, weight_kg, notes, created_at
     FROM weight_entries
     WHERE user_id = ${session.userId}
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { rows } = await sql`
+  const rows = await sql`
     INSERT INTO weight_entries (user_id, date, weight_kg, notes)
     VALUES (${session.userId}, ${body.date}, ${parseFloat(body.weight_kg)}, ${body.notes || ""})
     RETURNING id, date, weight_kg, notes, created_at

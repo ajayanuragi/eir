@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# eir — Weight Tracker
 
-## Getting Started
+Track your weight, visualize progress, reach your goals.
 
-First, run the development server:
+## Stack
+
+- **Runtime**: Bun 1.3+
+- **Framework**: Next.js 16 (App Router, `src/` dir)
+- **Database**: PostgreSQL via `@neondatabase/serverless` (Vercel Postgres / Neon)
+- **Auth**: JWT (`jose`) + bcrypt, httpOnly cookie
+- **Charts**: recharts
+- **Styling**: Tailwind CSS 4
+
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+bun install
+# Copy .env.example → .env.local and fill in values
+bun run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Env vars
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+SESSION_SECRET=generate_a_random_64_char_secret
+DATABASE_URL=your_postgres_connection_string
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Generate the secret: `openssl rand -base64 48`
 
-## Learn More
+### Database
 
-To learn more about Next.js, take a look at the following resources:
+1. Provision Postgres (Neon for local dev, Vercel Postgres for production)
+2. Run `schema.sql` against your database
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deployment
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Push to GitHub
+2. Import in Vercel
+3. Provision Vercel Postgres (Storage → Create Database)
+4. Add `SESSION_SECRET` to Environment Variables
+5. Run `schema.sql` against the Vercel Postgres database

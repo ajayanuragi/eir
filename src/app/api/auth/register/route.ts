@@ -15,18 +15,19 @@ export async function POST(request: Request) {
   }
 
   const existing = await sql`SELECT id FROM users WHERE username = ${username}`;
-  if (existing.rows.length > 0) {
+  if (existing.length > 0) {
     return NextResponse.json({ error: "Username already taken" }, { status: 409 });
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
-  const { rows } = await sql`
+  const users = await sql`
     INSERT INTO users (username, password_hash)
     VALUES (${username}, ${passwordHash})
     RETURNING id, username
   `;
 
-  const user = rows[0];
+  const user = users[0] as { id: string; username: string };
+
   const token = await encrypt({ userId: user.id, username: user.username });
   const response = NextResponse.json({ success: true });
   setSessionCookie(response, token);
