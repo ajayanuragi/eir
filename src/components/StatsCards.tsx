@@ -1,6 +1,6 @@
 "use client";
 
-import { TrendingDown, TrendingUp, Scale, Heart, Flame, Target } from "lucide-react";
+import { TrendingDown, TrendingUp, Scale, Heart, Flame, Target, CheckCircle, Calendar } from "lucide-react";
 
 interface Entry {
   id: string;
@@ -26,6 +26,19 @@ export default function StatsCards({
   const latest = sorted[sorted.length - 1]?.weight_kg ?? null;
   const first = sorted[0]?.weight_kg ?? null;
   const diff = latest !== null && first !== null ? (latest - first).toFixed(1) : null;
+
+  // Week-over-week — find entry closest to 7 days ago
+  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  let weekAgoWeight: number | null = null;
+  let minDiff = Infinity;
+  for (const e of sorted) {
+    const diff = Math.abs(new Date(e.date).getTime() - sevenDaysAgo);
+    if (diff < minDiff) {
+      minDiff = diff;
+      weekAgoWeight = e.weight_kg;
+    }
+  }
+  const weekDiff = latest !== null && weekAgoWeight !== null ? (latest - weekAgoWeight).toFixed(1) : null;
 
   const bmi =
     latest !== null && heightCm !== null
@@ -85,16 +98,21 @@ export default function StatsCards({
   }
 
   // Goal progress
+  const goalReached = latest !== null && goalWeight != null && latest <= goalWeight;
   const goalProgress =
     latest !== null && goalWeight != null
-      ? latest <= goalWeight ? 100 : Math.min(Math.round((1 - (latest - goalWeight) / latest) * 100), 100)
+      ? goalReached ? 100 : Math.min(Math.round((1 - (latest - goalWeight) / latest) * 100), 100)
+      : null;
+  const goalRemaining =
+    latest !== null && goalWeight != null
+      ? Math.abs(latest - goalWeight).toFixed(1)
       : null;
 
   const display = (kg: number) =>
     unitPref === "lbs" ? `${(kg * 2.20462).toFixed(1)} lbs` : `${kg} kg`;
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-6">
       {/* Current weight */}
       <div className="group rounded-xl border border-[var(--card-border)] p-4 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5" style={{ background: "var(--card)" }}>
         <div className="flex items-center gap-3">
@@ -110,7 +128,7 @@ export default function StatsCards({
         </div>
       </div>
 
-      {/* Change */}
+      {/* Change (overall) */}
       <div className="group rounded-xl border border-[var(--card-border)] p-4 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5" style={{ background: "var(--card)" }}>
         <div className="flex items-center gap-3">
           <div
@@ -127,13 +145,36 @@ export default function StatsCards({
             )}
           </div>
           <div>
-            <p className="text-xs font-medium" style={{ color: "var(--muted)" }}>Change</p>
+            <p className="text-xs font-medium" style={{ color: "var(--muted)" }}>Overall</p>
             <p className="text-xl font-bold" style={{ color: "var(--foreground)" }}>
               {diff !== null ? `${diff} kg` : "—"}
             </p>
           </div>
         </div>
       </div>
+
+      {/* Week-over-week */}
+      {weekDiff !== null && (
+        <div className="group rounded-xl border border-[var(--card-border)] p-4 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5" style={{ background: "var(--card)" }}>
+          <div className="flex items-center gap-3">
+            <div
+              className={`flex h-10 w-10 items-center justify-center rounded-lg shadow-sm ${
+                parseFloat(weekDiff) <= 0
+                  ? "bg-gradient-to-br from-emerald-400 to-emerald-600 text-white"
+                  : "bg-gradient-to-br from-amber-400 to-amber-600 text-white"
+              }`}
+            >
+              <Calendar size={18} />
+            </div>
+            <div>
+              <p className="text-xs font-medium" style={{ color: "var(--muted)" }}>7d change</p>
+              <p className="text-xl font-bold" style={{ color: "var(--foreground)" }}>
+                {weekDiff} kg
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* BMI */}
       <div className="group rounded-xl border border-[var(--card-border)] p-4 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5" style={{ background: "var(--card)" }}>
@@ -171,25 +212,42 @@ export default function StatsCards({
       {/* Goal progress */}
       <div className="group rounded-xl border border-[var(--card-border)] p-4 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5" style={{ background: "var(--card)" }}>
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-violet-400 to-violet-600 text-white shadow-sm">
-            <Target size={18} />
+          <div
+            className={`flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br shadow-sm ${
+              goalReached
+                ? "from-emerald-400 to-emerald-600"
+                : "from-violet-400 to-violet-600"
+            } text-white`}
+          >
+            {goalReached ? <CheckCircle size={18} /> : <Target size={18} />}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium" style={{ color: "var(--muted)" }}>
-              {goalWeight !== null ? "Goal" : "Entries"}
+              {goalWeight != null ? "Goal" : "Entries"}
             </p>
-              {goalWeight != null ? (
+            {goalWeight != null ? (
               <>
                 <p className="text-xl font-bold" style={{ color: "var(--foreground)" }}>
-                  {goalProgress !== null ? `${goalProgress}%` : "—"}
+                  {goalReached ? "Done!" : `${goalProgress}%`}
                 </p>
-                {goalProgress !== null && (
-                  <div className="mt-1 h-1.5 w-full rounded-full bg-[var(--muted-bg)]">
-                    <div
-                      className="h-1.5 rounded-full bg-gradient-to-r from-violet-500 to-orange-500 transition-all"
-                      style={{ width: `${goalProgress}%` }}
-                    />
-                  </div>
+                {goalReached ? (
+                  <p className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">Goal reached!</p>
+                ) : (
+                  <>
+                    <div className="mt-1 h-1.5 w-full rounded-full bg-[var(--muted-bg)]">
+                      <div
+                        className="h-1.5 rounded-full bg-gradient-to-r from-violet-500 to-orange-500 transition-all"
+                        style={{ width: `${goalProgress}%` }}
+                      />
+                    </div>
+                    {goalRemaining && (
+                      <p className="mt-0.5 text-[11px]" style={{ color: "var(--muted)" }}>
+                        {latest! > goalWeight!
+                          ? `${display(parseFloat(goalRemaining))} to lose`
+                          : `${display(parseFloat(goalRemaining))} to gain`}
+                      </p>
+                    )}
+                  </>
                 )}
               </>
             ) : (

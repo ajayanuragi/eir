@@ -100,9 +100,10 @@ src/
 │   ├── ThemeProvider.tsx        # Dark mode context + localStorage
 │   ├── StatsCards.tsx           # Current, change, BMI, streak, goal progress
 │   ├── WeightChart.tsx          # recharts AreaChart with moving average
-│   ├── MeasurementChart.tsx     # Multi-line body measurement chart
+
 │   ├── WeightForm.tsx           # Add/edit weight entry form
 │   ├── WeightTable.tsx          # Weight entries list with delete
+│   ├── MeasurementChart.tsx     # Multi-line body measurement chart
 │   ├── MeasurementForm.tsx      # Body measurement entry form
 │   ├── MeasurementTable.tsx     # Measurement history table
 │   └── HeightForm.tsx           # Height input (cm/in/ft+in)

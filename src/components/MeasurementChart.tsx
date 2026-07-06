@@ -64,12 +64,19 @@ export default function MeasurementChart({
     );
   }
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  interface TooltipPayload {
+    value: number;
+    name: string;
+    dataKey: string;
+    color: string;
+  }
+
+  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipPayload[]; label?: string }) => {
     if (!active || !payload?.length) return null;
     return (
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] px-4 py-3 shadow-lg">
         <p className="mb-1.5 text-xs font-medium" style={{ color: "var(--muted)" }}>{label}</p>
-        {payload.map((p: any) => (
+        {payload.map((p) => (
           <p key={p.dataKey} className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
             <span style={{ color: p.color }}>{p.name}:</span> {p.value} cm
           </p>

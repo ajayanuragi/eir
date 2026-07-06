@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Ruler, Scale, User, Settings, Target, Lock, RefreshCw } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import HeightForm from "@/components/HeightForm";
+import MeasurementChart from "@/components/MeasurementChart";
 import MeasurementForm from "@/components/MeasurementForm";
 import MeasurementTable from "@/components/MeasurementTable";
 
@@ -55,7 +56,7 @@ export default function ProfilePage() {
       setMeasurements(meas);
 
       const sorted = [...entries].sort(
-        (a: any, b: any) =>
+        (a: { date: string }, b: { date: string }) =>
           new Date(b.date).getTime() - new Date(a.date).getTime(),
       );
       setCurrentWeight(sorted[0]?.weight_kg ?? null);
@@ -313,6 +314,12 @@ export default function ProfilePage() {
             <h3 className="text-base font-semibold mb-4" style={{ color: "var(--foreground)" }}>Add measurements</h3>
             <MeasurementForm onAdded={fetchData} />
           </div>
+          {measurements.length >= 3 && (
+            <div className="rounded-2xl border border-[var(--card-border)] p-6 shadow-sm" style={{ background: "var(--card)" }}>
+              <h3 className="text-base font-semibold mb-4" style={{ color: "var(--foreground)" }}>Measurement trends</h3>
+              <MeasurementChart entries={measurements} />
+            </div>
+          )}
           <div className="rounded-2xl border border-[var(--card-border)] p-6 shadow-sm" style={{ background: "var(--card)" }}>
             <h3 className="text-base font-semibold mb-4" style={{ color: "var(--foreground)" }}>Measurement history</h3>
             <MeasurementTable entries={measurements} onDeleted={fetchData} />

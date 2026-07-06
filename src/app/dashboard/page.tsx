@@ -36,6 +36,7 @@ export default function DashboardPage() {
     }
     const data = await res.json();
     setEntries(data);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, [router]);
 
   useEffect(() => {
@@ -67,23 +68,31 @@ export default function DashboardPage() {
   function exportCSV() {
     const header = "Date,Weight (kg),Notes\n";
     const rows = entries
-      .map((e) => `${e.date},${e.weight_kg},"${(e.notes ?? "").replace(/"/g, '""')}"`)
+      .map(
+        (e) =>
+          `${e.date},${e.weight_kg},"${(e.notes ?? "").replace(/"/g, '""')}"`,
+      )
       .join("\n");
-    const blob = new Blob([header + rows], { type: "text/csv" });
+    const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = `eir-weights-${new Date().toISOString().split("T")[0]}.csv`;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center" style={{ background: "var(--background)" }}>
+      <div
+        className="flex min-h-screen items-center justify-center"
+        style={{ background: "var(--background)" }}
+      >
         <div className="flex flex-col items-center gap-3">
           <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-orange-600 border-t-transparent" />
-          <p className="text-sm text-[var(--muted)]">Loading your dashboard...</p>
+          <p className="text-sm text-(--muted)">Loading your dashboard...</p>
         </div>
       </div>
     );
@@ -107,8 +116,15 @@ export default function DashboardPage() {
               <Activity size={20} />
             </div>
             <div>
-              <h2 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>Dashboard</h2>
-              <p className="text-sm" style={{ color: "var(--muted)" }}>Track your weight progress</p>
+              <h2
+                className="text-2xl font-bold"
+                style={{ color: "var(--foreground)" }}
+              >
+                Dashboard
+              </h2>
+              <p className="text-sm" style={{ color: "var(--muted)" }}>
+                Track your weight progress
+              </p>
             </div>
           </div>
 
@@ -122,16 +138,34 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        <StatsCards entries={entries} heightCm={heightCm} goalWeight={goalWeight} unitPref={unitPref} />
+        <StatsCards
+          entries={entries}
+          heightCm={heightCm}
+          goalWeight={goalWeight}
+          unitPref={unitPref}
+        />
 
-        <div className="rounded-2xl border border-[var(--card-border)] p-6 shadow-sm" style={{ background: "var(--card)" }}>
-          <WeightChart entries={filtered} heightCm={heightCm} />
+        <div
+          className="rounded-2xl border border-[var(--card-border)] p-6 shadow-sm"
+          style={{ background: "var(--card)" }}
+        >
+          <WeightChart
+            entries={filtered}
+            heightCm={heightCm}
+            goalWeight={goalWeight}
+          />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-5">
           <div className="lg:col-span-2 space-y-6">
-            <div className="rounded-2xl border border-[var(--card-border)] p-6 shadow-sm" style={{ background: "var(--card)" }}>
-              <h3 className="mb-5 text-base font-semibold" style={{ color: "var(--foreground)" }}>
+            <div
+              className="rounded-2xl border border-[var(--card-border)] p-6 shadow-sm"
+              style={{ background: "var(--card)" }}
+            >
+              <h3
+                className="mb-5 text-base font-semibold"
+                style={{ color: "var(--foreground)" }}
+              >
                 Add entry
               </h3>
               <WeightForm onAdded={fetchEntries} />
@@ -139,9 +173,15 @@ export default function DashboardPage() {
           </div>
 
           <div className="lg:col-span-3">
-            <div className="rounded-2xl border border-[var(--card-border)] p-6 shadow-sm" style={{ background: "var(--card)" }}>
+            <div
+              className="rounded-2xl border border-[var(--card-border)] p-6 shadow-sm"
+              style={{ background: "var(--card)" }}
+            >
               <div className="flex items-center justify-between mb-5">
-                <h3 className="text-base font-semibold" style={{ color: "var(--foreground)" }}>
+                <h3
+                  className="text-base font-semibold"
+                  style={{ color: "var(--foreground)" }}
+                >
                   Recent entries
                 </h3>
                 <div className="flex items-center gap-1">

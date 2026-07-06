@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
   ComposedChart,
   Line,
+  ReferenceLine,
 } from "recharts";
 import { format, parseISO } from "date-fns";
 
@@ -22,9 +23,11 @@ interface Entry {
 export default function WeightChart({
   entries,
   heightCm,
+  goalWeight,
 }: {
   entries: Entry[];
   heightCm: number | null;
+  goalWeight?: number | null;
 }) {
   const [mode, setMode] = useState<"weight" | "bmi">("weight");
   const hasHeight = heightCm !== null && heightCm > 0;
@@ -84,12 +87,19 @@ export default function WeightChart({
           : "#dc2626"
     : "#ea580c";
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  interface TooltipPayload {
+    value: number;
+    name: string;
+    dataKey: string;
+    color: string;
+  }
+
+  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipPayload[]; label?: string }) => {
     if (!active || !payload?.length) return null;
     return (
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] px-4 py-3 shadow-lg">
         <p className="mb-1.5 text-xs font-medium" style={{ color: "var(--muted)" }}>{label}</p>
-        {payload.map((p: any) => (
+        {payload.map((p) => (
           <p key={p.dataKey} className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
             {p.dataKey === "avg" ? "Avg: " : ""}{p.value}{p.dataKey === "bmi" ? "" : " kg"}
           </p>
@@ -169,6 +179,21 @@ export default function WeightChart({
                 strokeDasharray="6 3"
                 dot={false}
                 activeDot={false}
+              />
+            )}
+            {mode === "weight" && goalWeight != null && (
+              <ReferenceLine
+                y={goalWeight}
+                stroke="#059669"
+                strokeDasharray="6 3"
+                strokeWidth={1.5}
+                label={{
+                  value: "Goal",
+                  position: "insideTopRight",
+                  fill: "#059669",
+                  fontSize: 11,
+                  fontWeight: 600,
+                }}
               />
             )}
           </ComposedChart>
